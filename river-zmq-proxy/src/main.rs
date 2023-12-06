@@ -1,8 +1,6 @@
 use futures::{future, SinkExt, StreamExt};
-use rand::Rng;
-use std::{error::Error, rc::Rc, time::Duration};
-use tmq::{dealer, router, Context, Multipart};
-use tokio::time::sleep;
+use std::rc::Rc;
+use tmq::{dealer, router, Context};
 
 /// Simulates zmq::proxy using asynchronous sockets.
 async fn proxy(ctx: Rc<Context>, frontend: String, backend: String) -> tmq::Result<()> {

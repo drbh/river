@@ -15,7 +15,8 @@
   const pc = new RTCPeerConnection({
     iceServers: [
       {
-        urls: "stun:stun.l.google.com:19302",
+        // urls: "stun:stun.l.google.com:19302",
+        urls: "stun:127.0.0.1:3478",
       },
     ],
   });
@@ -51,7 +52,7 @@
   pc.onicecandidate = (event) => {
     if (event.candidate === null) {
       localSessionDescriptionElement.value = btoa(
-        JSON.stringify(pc.localDescription),
+        JSON.stringify(pc.localDescription)
       );
     }
   };
@@ -69,13 +70,13 @@
 
   const initCanvasStreams = () => {
     const streams = [
-      canvasOneElement.captureStream(1),
+      canvasOneElement.captureStream(10),
       // canvasTwoElement.captureStream(),
       // canvasThreeElement.captureStream(),
     ];
 
     streams.forEach((stream) =>
-      stream.getVideoTracks().forEach((track) => pc.addTrack(track, stream)),
+      stream.getVideoTracks().forEach((track) => pc.addTrack(track, stream))
     );
   };
 
@@ -100,7 +101,7 @@
   const startAnimation = (
     canvas: HTMLCanvasElement,
     color: string,
-    circles: any[],
+    circles: any[]
   ) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) {
@@ -108,7 +109,7 @@
     }
 
     let angle = 0;
-    const fps = 1; // arget frames per second
+    const fps = 10; // target frames per second
     const frameDuration = 1000 / fps; // Duration of each frame in milliseconds
 
     let lastDrawTime = Date.now();
@@ -145,7 +146,7 @@
     ctx: CanvasRenderingContext2D,
     color: string,
     angle: number,
-    circles: any[] = [],
+    circles: any[] = []
   ) {
     // Background
     ctx.clearRect(0, 0, 200, 200);
@@ -179,6 +180,7 @@
     // const response = await fetch("/api/offer");
     // const data = await response.text();
 
+    console.log("Sending offer to server");
     const response = await fetch("/api/offer", {
       method: "POST",
       headers: {
@@ -188,6 +190,7 @@
         name: localSessionDescriptionElement.value,
       }),
     });
+    console.log("response", response);
 
     // const response = await fetch("/api/offer", {
     //   method: "POST",
@@ -214,12 +217,12 @@
 
     try {
       await pc.setRemoteDescription(
-        new RTCSessionDescription(JSON.parse(atob(sd))),
+        new RTCSessionDescription(JSON.parse(atob(sd)))
       );
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       localSessionDescriptionElement.value = btoa(
-        JSON.stringify(pc.localDescription),
+        JSON.stringify(pc.localDescription)
       );
     } catch (e) {
       alert(e);
