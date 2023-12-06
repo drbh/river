@@ -3,32 +3,32 @@ use poem::{
     get, handler, listener::TcpListener, middleware::Tracing, post, web::Data, web::Path,
     EndpointExt, Route, Server,
 };
-use poem::{web::Html, Response};
+use poem::{
+    web::{Html, Json},
+    Response,
+};
+use serde::Deserialize;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex};
-mod model;
 
-const SEND_END: bool = false;
+mod model;
+mod river_webrtc;
+
+#[derive(Debug, Deserialize)]
+struct CreateSomething {
+    name: String,
+}
 
 // Shared data between requests (it holds a mutex to the model)
 #[derive(Clone)]
 struct Shared {
-    blip: Arc<Mutex<model::ModelResources>>,
+    blip: Arc<Mutex<model::MediaStreamer>>,
 }
 
 impl Shared {
-    async fn new(quantized: bool) -> Self {
+    async fn new() -> Self {
         Self {
-            blip: Arc::new(Mutex::new(
-                model::ModelResources::new(model::ModelArgs {
-                    model: None,
-                    tokenizer: None,
-                    cpu: true,
-                    quantized,
-                })
-                .await
-                .unwrap(),
-            )),
+            blip: Arc::new(Mutex::new(model::MediaStreamer::new().await.unwrap())),
         }
     }
 }
@@ -87,20 +87,10 @@ async fn assets(Path(filename): Path<String>) -> Response {
     }
 }
 
-use poem::web::Json;
-
-use serde::Deserialize;
-
-#[derive(Debug, Deserialize)]
-struct CreateSomething {
-    name: String,
-}
-
 #[handler]
 async fn offer(req: Json<CreateSomething>, shared: Data<&Shared>) -> Html<String> {
     let name = req.name.clone();
     let shared2 = shared.clone();
-
     // call new_connection on the model
     let mut shared_model = shared2.blip.lock().await;
     let offer = shared_model
@@ -127,14 +117,12 @@ async fn main() -> Result<(), std::io::Error> {
         std::env::set_var("RUST_LOG", "poem=debug");
     }
     tracing_subscriber::fmt::init();
-    let shared_data = Shared::new(false).await;
+    let shared_data = Shared::new().await;
     let new_app = || {
         Route::new()
             .at("/", get(index))
             .at("/assets/:filename", get(assets))
             .at("/offer", post(offer))
-            // .at("/api/cap", post(caption))
-            // .at("/cap", post(caption))
             .data(shared_data)
             .with(Tracing)
     };
