@@ -1,0 +1,9 @@
+[workspace]
+
+members = [
+    "river-onnx",
+    "river-serve",
+    "river-zmq-proxy",
+]
+
+resolver = "2"
