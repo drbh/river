@@ -11,7 +11,9 @@
 | [river-app](river-app/README.md) | A simple web app that uses `river-serve` to stream video from a webcam and `river-onnx` to perform inference on each frame |
 
 
-## General Concept
+## General Concepts
+
+### Video Fragmentation
 
 `river-serve` is a small server that supports peer to peer WebRTC H264 video streaming, as each video fragment is received it's placed on the `packet` channel. 
 
@@ -30,3 +32,20 @@ The result of this is a output stream that is delayed by N amount of time, but h
 - 2. How to perform inference on each frame
 - 3. How to send the inference results back to the peer
 - 4. How to keep the peer in sync with the delay
+
+### Scalable AI Inference
+
+`river-onnx` is a small ZMQ server that supports inference of ONNX models. It's designed to be horizontally scalable and is stateless.
+
+It can be thought of as a simple microservice that waits for ZMQ messages and performs inference on the message payload and returns the result. 
+
+The ZMQ socket is of type DEALER and when used in tandem with a small PROXY server it can be scaled horizontally to support multiple instances of the service.
+
+This patern is implemented with the help of the `river-zmq-proxy` package. This package is a small standalone application that handles connections between N number of DEALER sockets and a N number of ROUTER sockets. 
+
+The result of this is the ability to deploy multiple instances of `river-onnx` and have them scale horizontally to support the load. 
+
+On each image `river-server` sends a ZMQ message to the `river-zmq-proxy` with the payload being the image bytes. The `river-zmq-proxy` then forwards the message to one of the `river-onnx` instances. The `river-onnx` instance performs inference and sends the result back to the `river-zmq-proxy` which then forwards the result back to `river-serve` which then sends the result back to the peer.
+
+The advantage of this approach is that the proxy will always send the message to the least busy `river-onnx` instance, and lets us roughtly distribute the load evenly across all instances even if the instances have different hardware specs and inference times.
+
