@@ -23,13 +23,13 @@ struct CreateSomething {
 // Shared data between requests (it holds a mutex to the model)
 #[derive(Clone)]
 struct Shared {
-    blip: Arc<Mutex<media_streamer::MediaStreamer>>,
+    media_streamer: Arc<Mutex<media_streamer::MediaStreamer>>,
 }
 
 impl Shared {
     async fn new() -> Self {
         Self {
-            blip: Arc::new(Mutex::new(media_streamer::MediaStreamer::new().await.unwrap())),
+            media_streamer: Arc::new(Mutex::new(media_streamer::MediaStreamer::new().await.unwrap())),
         }
     }
 }
@@ -93,7 +93,7 @@ async fn offer(req: Json<CreateSomething>, shared: Data<&Shared>) -> Html<String
     let name = req.name.clone();
     let shared2 = shared.clone();
     // call new_connection on the model
-    let mut shared_model = shared2.blip.lock().await;
+    let mut shared_model = shared2.media_streamer.lock().await;
     let offer = shared_model
         .new_connection(
             name,
