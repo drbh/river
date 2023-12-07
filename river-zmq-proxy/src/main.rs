@@ -30,8 +30,8 @@ async fn proxy(ctx: Rc<Context>, frontend: String, backend: String) -> tmq::Resu
 }
 
 fn main() -> tmq::Result<()> {
-    let frontend = "tcp://127.0.0.1:5555".to_string();
-    let backend = "tcp://127.0.0.1:5556".to_string();
+    let frontend = "tcp://0.0.0.0:5555".to_string();
+    let backend = "tcp://0.0.0.0:5556".to_string();
     let ctx = Rc::new(Context::new());
 
     let mut runtime = tokio::runtime::Builder::new_current_thread()

@@ -1,3 +1,4 @@
+use base64::{engine::general_purpose, Engine as _};
 use futures::SinkExt;
 use image::DynamicImage::ImageRgb8;
 use openh264::{decoder::Decoder, nal_units};
@@ -15,7 +16,6 @@ use webrtc::{
     },
     Error,
 };
-use base64::{engine::general_purpose, Engine as _};
 
 /// A struct to handle splitting of video frames from RTP packets.
 pub struct FrameSplitter {}
@@ -167,16 +167,19 @@ impl FrameSplitter {
 
                     // Check if there was at least one successfully decoded frame
                     if let Some(yuv_buffer) = last_yuv {
-                        let _image =
+                        let image =
                             ImageRgb8(image::RgbImage::from_raw(200, 200, yuv_buffer).unwrap());
 
-                        let buf = std::io::Cursor::new(Vec::new());
+                        let mut buf = std::io::Cursor::new(Vec::new());
+                        image
+                            .write_to(&mut buf, image::ImageOutputFormat::Png)
+                            .unwrap();
                         let b64_image = general_purpose::STANDARD.encode(buf.into_inner());
 
                         // TODO: add a timeout so it doesn't seize up if no workers are available
-                        if false {
+                        if true {
                             let ctx = Arc::new(Context::new());
-                            let frontend = "tcp://127.0.0.1:5555".to_string();
+                            let frontend = "tcp://0.0.0.0:5555".to_string();
 
                             let mut sock = dealer(&ctx).connect(&frontend).unwrap();
 
