@@ -40,6 +40,7 @@ fn main() -> tmq::Result<()> {
     let tasks = tokio::task::LocalSet::new();
 
     tasks.block_on(&mut runtime, async move {
+        println!("Starting proxy...");
         proxy(ctx.clone(), frontend, backend)
             .await
             .expect("Proxy failed");

@@ -126,7 +126,6 @@ impl MediaStreamer {
         // Use the default set of Interceptors
         registry = register_default_interceptors(registry, &mut m)?;
 
-        println!("Please enter the base64 encoded SessionDescription from the browser:");
         // Create the API object with the MediaEngine
         let api: API = APIBuilder::new()
             .with_media_engine(m)
