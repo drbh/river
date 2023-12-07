@@ -12,6 +12,7 @@ use webrtc::rtcp::payload_feedbacks::picture_loss_indication::PictureLossIndicat
 use webrtc::rtp_transceiver::rtp_codec::RTCRtpCodecCapability;
 use webrtc::track::track_local::track_local_static_rtp::TrackLocalStaticRTP;
 use webrtc::track::track_local::TrackLocal;
+use base64::{engine::general_purpose, Engine as _};
 
 pub struct WebRTCService {}
 
@@ -49,7 +50,7 @@ impl WebRTCService {
         });
 
         // Set the remote SessionDescription from client (Offer)
-        let desc_data = String::from_utf8(base64::decode(offer)?)?;
+        let desc_data = String::from_utf8(general_purpose::STANDARD.decode(offer)?)?;
         let offer = serde_json::from_str::<RTCSessionDescription>(&desc_data)?;
         peer_connection.set_remote_description(offer).await?;
         Ok((peer_connection, output_track))

@@ -11,8 +11,9 @@ use serde::Deserialize;
 use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex};
 
-mod model;
+mod media_streamer;
 mod river_webrtc;
+mod frame_splitter;
 
 #[derive(Debug, Deserialize)]
 struct CreateSomething {
@@ -22,13 +23,13 @@ struct CreateSomething {
 // Shared data between requests (it holds a mutex to the model)
 #[derive(Clone)]
 struct Shared {
-    blip: Arc<Mutex<model::MediaStreamer>>,
+    blip: Arc<Mutex<media_streamer::MediaStreamer>>,
 }
 
 impl Shared {
     async fn new() -> Self {
         Self {
-            blip: Arc::new(Mutex::new(model::MediaStreamer::new().await.unwrap())),
+            blip: Arc::new(Mutex::new(media_streamer::MediaStreamer::new().await.unwrap())),
         }
     }
 }
