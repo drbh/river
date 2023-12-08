@@ -69,7 +69,7 @@ fn main() -> tmq::Result<()> {
     let backend = "tcp://127.0.0.1:5556".to_string();
     let ctx = Rc::new(Context::new());
 
-    let mut runtime = tokio::runtime::Builder::new_current_thread()
+    let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()?;
     let tasks = tokio::task::LocalSet::new();
@@ -108,7 +108,7 @@ fn main() -> tmq::Result<()> {
     });
 
     // block on all tasks
-    tasks.block_on(&mut runtime, async move {
+    tasks.block_on(&runtime, async move {
         future::pending::<()>().await;
     });
 
