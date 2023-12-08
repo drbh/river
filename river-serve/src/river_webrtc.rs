@@ -1,5 +1,6 @@
 // use tokenizers::Tokenizer;
 use anyhow::Result;
+use base64::{engine::general_purpose, Engine as _};
 use std::sync::atomic::AtomicUsize;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
@@ -12,7 +13,6 @@ use webrtc::rtcp::payload_feedbacks::picture_loss_indication::PictureLossIndicat
 use webrtc::rtp_transceiver::rtp_codec::RTCRtpCodecCapability;
 use webrtc::track::track_local::track_local_static_rtp::TrackLocalStaticRTP;
 use webrtc::track::track_local::TrackLocal;
-use base64::{engine::general_purpose, Engine as _};
 
 pub struct WebRTCService {}
 
